@@ -10,3 +10,9 @@ node_modules/todomvc-app-css
 node_modules/todomvc-common
 !node_modules/todomvc-common/base.css
 !node_modules/todomvc-common/base.js
+
+node_modules/classnames
+!node_modules/classnames/index.js
+
+node_modules/jquery/
+!node_modules/jquery/dist/jquery.js

@@ -15,9 +15,23 @@ var app = app || {};
 	// separate out parts of your application.
 	app.TodoModel = function (key) {
 		this.key = key;
-		this.todos = Utils.store(key);
+		this.todos = [];
+		this.graphql('todos', 'query { todos { id, title, completed } }');
 		this.onChanges = [];
 	};
+
+	app.TodoModel.prototype.graphql = function(queryName, queryString) {
+		$.ajax({
+			method: 'POST',
+			contentType: 'application/graphql',
+			url: '/graphql',
+			data: queryString
+		}).done(function(response, code) {
+			this.todos = response.data[queryName] || [];
+			this.inform();
+		}.bind(this));
+	};
+
 
 	app.TodoModel.prototype.subscribe = function (onChange) {
 		this.onChanges.push(onChange);
@@ -29,59 +43,75 @@ var app = app || {};
 	};
 
 	app.TodoModel.prototype.addTodo = function (title) {
-		this.todos = this.todos.concat({
-			id: Utils.uuid(),
-			title: title,
-			completed: false
-		});
-
-		this.inform();
+		this.graphql('add', `
+			mutation {
+				add (title: "${title}") {
+					id,
+					title,
+					completed
+				}
+			}
+		`);
 	};
 
 	app.TodoModel.prototype.toggleAll = function (checked) {
-		// Note: it's usually better to use immutable data structures since they're
-		// easier to reason about and React works very well with them. That's why
-		// we use map() and filter() everywhere instead of mutating the array or
-		// todo items themselves.
-		this.todos = this.todos.map(function (todo) {
-			return Utils.extend({}, todo, {completed: checked});
-		});
-
-		this.inform();
+		this.graphql('toggleAll', `
+			mutation {
+				toggleAll (checked: ${checked}) {
+					id,
+					title,
+					completed
+				}
+			}
+		`);
 	};
 
 	app.TodoModel.prototype.toggle = function (todoToToggle) {
-		this.todos = this.todos.map(function (todo) {
-			return todo !== todoToToggle ?
-				todo :
-				Utils.extend({}, todo, {completed: !todo.completed});
-		});
-
-		this.inform();
+		this.graphql('toggle', `
+			mutation {
+				toggle (id: ${todoToToggle.id}) {
+					id,
+					title,
+					completed
+				}
+			}
+		`);
 	};
 
 	app.TodoModel.prototype.destroy = function (todo) {
-		this.todos = this.todos.filter(function (candidate) {
-			return candidate !== todo;
-		});
-
-		this.inform();
+		this.graphql('destroy', `
+			mutation {
+				destroy (id: ${todo.id}) {
+					id,
+					title,
+					completed
+				}
+			}
+		`);
 	};
 
 	app.TodoModel.prototype.save = function (todoToSave, text) {
-		this.todos = this.todos.map(function (todo) {
-			return todo !== todoToSave ? todo : Utils.extend({}, todo, {title: text});
-		});
-
-		this.inform();
+		this.graphql('save', `
+			mutation {
+				save (id: ${todoToSave.id}, title: "${text}") {
+					id,
+					title,
+					completed
+				}
+			}
+		`);
 	};
 
 	app.TodoModel.prototype.clearCompleted = function () {
-		this.todos = this.todos.filter(function (todo) {
-			return !todo.completed;
-		});
-
-		this.inform();
+		this.graphql('clearCompleted', `
+			mutation {
+				clearCompleted {
+					id,
+					title,
+					completed
+				}
+			}
+		`);
 	};
 
 })();
