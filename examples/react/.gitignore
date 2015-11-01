@@ -16,3 +16,8 @@ node_modules/classnames
 
 node_modules/jquery/
 !node_modules/jquery/dist/jquery.js
+
+node_modules/express-graphql/
+node_modules/express/
+node_modules/graphql/
+node_modules/request/
