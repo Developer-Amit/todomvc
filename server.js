@@ -7,7 +7,7 @@ var app = express()
     bodyParser(req, function (error, data) {
       error && console.error(error);
       request({
-        url: 'https://todo-graphql-server.herokuapp.com/graphql', //URL to hit
+        url: process.env.PORT ? 'https://todo-mongo-graphql-server.herokuapp.com/graphql' : 'http://localhost:8080', //URL to hit
         method: 'POST',
         headers: {
           'Content-Type': 'application/graphql'

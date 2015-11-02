@@ -69,7 +69,7 @@ var app = app || {};
 	app.TodoModel.prototype.toggle = function (todoToToggle) {
 		this.graphql('toggle', `
 			mutation {
-				toggle (id: ${todoToToggle.id}) {
+				toggle (id: "${todoToToggle.id}") {
 					id,
 					title,
 					completed
@@ -81,7 +81,7 @@ var app = app || {};
 	app.TodoModel.prototype.destroy = function (todo) {
 		this.graphql('destroy', `
 			mutation {
-				destroy (id: ${todo.id}) {
+				destroy (id: "${todo.id}") {
 					id,
 					title,
 					completed
@@ -93,7 +93,7 @@ var app = app || {};
 	app.TodoModel.prototype.save = function (todoToSave, text) {
 		this.graphql('save', `
 			mutation {
-				save (id: ${todoToSave.id}, title: "${text}") {
+				save (id: "${todoToSave.id}", title: "${text}") {
 					id,
 					title,
 					completed
