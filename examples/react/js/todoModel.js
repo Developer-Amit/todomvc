@@ -16,19 +16,30 @@ var app = app || {};
 	app.TodoModel = function (key) {
 		this.key = key;
 		this.todos = [];
-		this.graphql('todos', 'query { todos { id, title, completed } }');
+		this.updateTodoList();
 		this.onChanges = [];
 	};
 
-	app.TodoModel.prototype.graphql = function(queryName, queryString) {
+	app.TodoModel.prototype.updateTodoList = function() {
+		$.ajax({
+			method: 'POST',
+			contentType: 'application/graphql',
+			url: '/graphql',
+			data: 'query { todos { id, title, completed } }'
+		}).done(function(response, code) {
+			this.todos = response.data['todos'] || [];
+			this.inform();
+		}.bind(this));
+	}
+
+	app.TodoModel.prototype.graphql = function(queryString) {
 		$.ajax({
 			method: 'POST',
 			contentType: 'application/graphql',
 			url: '/graphql',
 			data: queryString
 		}).done(function(response, code) {
-			this.todos = response.data[queryName] || [];
-			this.inform();
+			this.updateTodoList()
 		}.bind(this));
 	};
 
@@ -43,7 +54,7 @@ var app = app || {};
 	};
 
 	app.TodoModel.prototype.addTodo = function (title) {
-		this.graphql('add', `
+		this.graphql(`
 			mutation {
 				add (title: "${title}") {
 					id,
@@ -55,7 +66,7 @@ var app = app || {};
 	};
 
 	app.TodoModel.prototype.toggleAll = function (checked) {
-		this.graphql('toggleAll', `
+		this.graphql(`
 			mutation {
 				toggleAll (checked: ${checked}) {
 					id,
@@ -67,7 +78,7 @@ var app = app || {};
 	};
 
 	app.TodoModel.prototype.toggle = function (todoToToggle) {
-		this.graphql('toggle', `
+		this.graphql(`
 			mutation {
 				toggle (id: "${todoToToggle.id}") {
 					id,
@@ -79,7 +90,7 @@ var app = app || {};
 	};
 
 	app.TodoModel.prototype.destroy = function (todo) {
-		this.graphql('destroy', `
+		this.graphql(`
 			mutation {
 				destroy (id: "${todo.id}") {
 					id,
@@ -91,7 +102,7 @@ var app = app || {};
 	};
 
 	app.TodoModel.prototype.save = function (todoToSave, text) {
-		this.graphql('save', `
+		this.graphql(`
 			mutation {
 				save (id: "${todoToSave.id}", title: "${text}") {
 					id,
@@ -103,7 +114,7 @@ var app = app || {};
 	};
 
 	app.TodoModel.prototype.clearCompleted = function () {
-		this.graphql('clearCompleted', `
+		this.graphql(`
 			mutation {
 				clearCompleted {
 					id,
